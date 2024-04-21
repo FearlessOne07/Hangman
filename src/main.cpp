@@ -273,13 +273,15 @@ void BeginGame(
     showString += "_";
   }
   
+  std::cout << "This word has " << length << " letters.\n";
   while(!solved && maxTries > 0)
   {
     std::cout << "You have " << maxTries << " tries left.\n";
-    std::cout << length << " characters left to guess.\n";
-    std::cout << showString << "\n";
+    std::cout << length << " letters left to guess.\n\n";
+    std::cout << showString << "\n\n";
     std::cout << "Take your guess: ";
-    std::cin >> guess;   
+    std::cin >> guess;
+    std::cout << "\n";
     solved = CheckWord(guess, showString, hangWord, maxTries, length);
   }
 

@@ -1,46 +1,37 @@
 #include <cctype>
 #include <cstddef>
+#include <fstream>
 #include <ios>
 #include <iostream>
-#include <fstream>
+#include <random>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <random>
 
 // Custom Types
-enum Difficulty : unsigned short
-{
-  EASY = 1,
-  MEDIUM,
-  HARD,
-  DICTIONARY
-};
+enum Difficulty : unsigned short { EASY = 1, MEDIUM, HARD, DICTIONARY };
 
 // Functions
 Difficulty ChooseDifficulty();
-bool LoadWords(std::unordered_map<unsigned short, std::vector<std::string>>& words);
-void BeginGame(
-  std::unordered_map<unsigned short, std::vector<std::string>>&,
-  Difficulty
-);
-void ChooseWord(std::vector<std::string>&, std::string&);
-bool CheckWord(std::string& guess, std::string& showString, std::string& hangword, int&, int&);
+bool LoadWords(
+    std::unordered_map<unsigned short, std::vector<std::string>> &words);
+void BeginGame(std::unordered_map<unsigned short, std::vector<std::string>> &,
+               Difficulty);
+void ChooseWord(std::vector<std::string> &, std::string &);
+bool CheckWord(std::string &guess, std::string &showString,
+               std::vector<std::string> &guessedLetters, std::string &hangword,
+               int &maxTries, int &wordLength);
 
-int main(void)
-{
+int main(void) {
   std::unordered_map<unsigned short, std::vector<std::string>> words;
   Difficulty difficulty;
   bool wantsPlay = true;
 
-  if(!LoadWords(words))
-  {
+  if (!LoadWords(words)) {
     return -1;
   }
 
-  while(wantsPlay)
-  {
-
+  while (wantsPlay) {
     difficulty = ChooseDifficulty();
     BeginGame(words, difficulty);
 
@@ -49,93 +40,78 @@ int main(void)
     std::cout << "Press 'P' to play again or 'E' to quit.\n";
     std::cin >> play;
 
-    if(std::tolower(play[0]) == 'p')
-    {
+    if (std::tolower(play[0]) == 'p') {
       continue;
-    }
-    else
-    {
-      wantsPlay = false; 
+    } else {
+      wantsPlay = false;
     }
   }
 
   return 0;
 }
 
-void ChooseWord(std::vector<std::string>& words, std::string& hangWord)
-{
+void ChooseWord(std::vector<std::string> &words, std::string &hangWord) {
   std::random_device rd;
   std::mt19937 gen(rd());
-  
+
   std::uniform_int_distribution<int> dist(0, words.size() - 1);
   hangWord = words[dist(gen)];
 }
 
-
-bool CheckWord(std::string& guess, std::string& showString, std::string& hangWord, int& maxTries, int& length)
-{
+bool CheckWord(std::string &guess, std::string &showString,
+               std::string &hangWord, std::vector<std::string> &guessedLetters,
+               int &maxTries, int &length) {
   std::vector<std::size_t> positions;
-  if((guess.size() > 1 && guess.size() < hangWord.size()) || guess.size() > hangWord.size())
-  {
-    std::cout << "Your guess must be a letter or a word equal to the number of dashes.\n\n";
+  if ((guess.size() > 1 && guess.size() < hangWord.size()) ||
+      guess.size() > hangWord.size()) {
+    std::cout << "Your guess must be a letter or a word equal to the number of "
+                 "dashes.\n\n";
     return false;
   }
 
-  if(guess.size() == hangWord.size())
-  {
-    if(hangWord.find(guess) == std::string::npos)
-    {
-      std::cout << "Ooooh, that word wasn't quite right. Try again.\n\n";
+  if (guess.size() == hangWord.size()) {
+    if (hangWord.find(guess) == std::string::npos) {
+      std::cout << "\033[31m";
+      std::cout << " Ooooh, that word wasn't quite right. Try "
+                   "again.\033[0m \n\n";
       maxTries--;
       return false;
-    }
-    else 
-    {
+    } else {
       showString = guess;
       return true;
     }
   }
 
-  if (guess.size() == 1) 
-  {
-
-    if(showString.find(guess[0]) == std::string::npos)
-    {
+  if (guess.size() == 1) {
+    if (showString.find(guess[0]) == std::string::npos) {
       std::size_t position = hangWord.find(guess);
+      guessedLetters.push_back(guess);
+      if (position != std::string::npos) {
 
-      if(position != std::string::npos)
-      {
-
-        while(position != std::string::npos)
-        {
+        while (position != std::string::npos) {
           positions.push_back(position);
           position = hangWord.find(guess, position + 1);
         }
 
-        for(std::size_t pos : positions)
-        {
-          showString[pos] = guess[0]; 
+        for (std::size_t pos : positions) {
+          showString[pos] = guess[0];
         }
         length -= positions.size();
-      }
-      else 
-      {
-        std::cout << "Ooooh, that letter wasn't quite right. Try again.\n\n";
+      } else {
+        std::cout << "\033[31m";
+        std::cout
+            << "Ooooh, that letter wasn't quite right. Try again.\033[0m\n\n";
         maxTries--;
         return false;
       }
 
-      if(showString.find("_") == std::string::npos)
-      {
+      if (showString.find("_") == std::string::npos) {
         return true;
+      } else {
+        std::cout << "Well done! You guessed the letter \"" << guess
+                  << "\"\n\n";
       }
-      else 
-      { 
-        std::cout << "Well done! You guessed the letter \"" << guess << "\"\n\n";
-      }
-    }
-    else 
-    {
+    } else {
       std::cout << "Letter has already been guessed.\n\n";
       return false;
     }
@@ -143,42 +119,34 @@ bool CheckWord(std::string& guess, std::string& showString, std::string& hangWor
   return false;
 }
 
-bool LoadWords(std::unordered_map<unsigned short, std::vector<std::string>>& words)
-{
+bool LoadWords(
+    std::unordered_map<unsigned short, std::vector<std::string>> &words) {
   Difficulty difficulty;
   std::fstream file;
   std::string word;
 
   file.open("words.txt");
-  if(!file)
-  {
-    std::cout << "Failed to find \"words.txt\". Make sure it is in the same directory as the \"Hangman\" executable.\n";
+  if (!file) {
+    std::cout << "Failed to find \"words.txt\". Make sure it is in the same "
+                 "directory as the \"Hangman\" executable.\n";
     return false;
   }
 
   // Read File
-  while (std::getline(file, word)) 
-  {
-    if(word.find("Easy") != std::string::npos)
-    {
+  while (std::getline(file, word)) {
+    if (word.find("Easy") != std::string::npos) {
       difficulty = EASY;
       std::cout << "Reading \"Easy\" words...\n";
       continue;
-    }
-    else if(word.find("Medium") != std::string::npos) 
-    {
+    } else if (word.find("Medium") != std::string::npos) {
       difficulty = MEDIUM;
       std::cout << "Reading \"Medium\" words...\n";
       continue;
-    }
-    else if(word.find("Hard") != std::string::npos)
-    {
+    } else if (word.find("Hard") != std::string::npos) {
       difficulty = HARD;
       std::cout << "Reading \"Hard\" words...\n";
       continue;
-    }
-    else if(word.find("Dictionary") != std::string::npos)
-    {
+    } else if (word.find("Dictionary") != std::string::npos) {
       difficulty = DICTIONARY;
       std::cout << "Reading \"Dictionary\" words...\n";
       continue;
@@ -190,38 +158,27 @@ bool LoadWords(std::unordered_map<unsigned short, std::vector<std::string>>& wor
   return true;
 }
 
-Difficulty ChooseDifficulty()
-{
+Difficulty ChooseDifficulty() {
   unsigned short choice;
-  Difficulty difficulty; 
+  Difficulty difficulty;
   bool chosen = false;
 
   std::cout << "1 - Easy\n2 - Medium\n3 - Hard\n4 - Dictionary\n";
-  while(!chosen)
-  {
+  while (!chosen) {
     std::cout << "Choose a difficulty: ";
     std::cin >> choice;
 
     chosen = true;
-    difficulty = static_cast<Difficulty>(choice); 
-    if(difficulty == EASY)
-    {
+    difficulty = static_cast<Difficulty>(choice);
+    if (difficulty == EASY) {
       std::cout << "Your chosen Diffuculty is Easy\n";
-    }
-    else if(difficulty == MEDIUM)
-    {
+    } else if (difficulty == MEDIUM) {
       std::cout << "Your chosen Diffuculty is Medium\n";
-    }
-    else if(difficulty == HARD)
-    {
+    } else if (difficulty == HARD) {
       std::cout << "Your chosen Diffuculty is Hard\n";
-    }
-    else if(difficulty == DICTIONARY)
-    {
+    } else if (difficulty == DICTIONARY) {
       std::cout << "Your chosen Diffuculty is Dictionary\n";
-    }
-    else 
-    {
+    } else {
       std::cout << "Invalid choice. Try again\n";
       std::cin.clear();
       std::cin.ignore();
@@ -233,15 +190,12 @@ Difficulty ChooseDifficulty()
 }
 
 void BeginGame(
-  std::unordered_map<unsigned short, std::vector<std::string>>& wordsMap,
-  Difficulty difficulty
-)
-{
+    std::unordered_map<unsigned short, std::vector<std::string>> &wordsMap,
+    Difficulty difficulty) {
   std::vector<std::string> words = wordsMap[difficulty];
   int maxTries;
-  
-  switch (difficulty) 
-  {
+
+  switch (difficulty) {
   case EASY:
     maxTries = 6;
     break;
@@ -268,30 +222,40 @@ void BeginGame(
 
   ChooseWord(words, hangWord);
   length = hangWord.size();
-  for(int i = 0; i < hangWord.size(); ++i)
-  {
+  for (int i = 0; i < hangWord.size(); ++i) {
     showString += "_";
   }
-  
+
   std::cout << "This word has " << length << " letters.\n";
-  while(!solved && maxTries > 0)
-  {
+  std::vector<std::string> guessedLetters = {};
+
+  while (!solved && maxTries > 0) {
     std::cout << "You have " << maxTries << " tries left.\n";
     std::cout << length << " letters left to guess.\n\n";
+    std::cout << "Letters tried: [";
+    for (std::string &letter : guessedLetters) {
+      if (hangWord.find(letter) != std::string::npos) {
+        std::cout << "\033[32m";
+      } else {
+
+        std::cout << "\033[31m";
+      }
+      std::cout << letter;
+      std::cout << "\033[0m";
+      std::cout << ", ";
+    }
+    std::cout << "]\n\n";
     std::cout << showString << "\n\n";
     std::cout << "Take your guess: ";
     std::cin >> guess;
     std::cout << "\n";
-    solved = CheckWord(guess, showString, hangWord, maxTries, length);
+    solved = CheckWord(guess, showString, hangWord, guessedLetters, maxTries,
+                       length);
   }
 
-  if(!solved)
-  {
+  if (!solved) {
     std::cout << "The word was \"" << hangWord << "\".\n\n";
-  }
-  else 
-  {
+  } else {
     std::cout << "Yay! You got the word \"" << hangWord << "\"!\n\n";
   }
 }
-

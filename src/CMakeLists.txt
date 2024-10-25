@@ -1,4 +1,6 @@
 add_executable(
   ${PROJECT_NAME}
-  "main.cpp"
+  "./main.cpp"
+  "./Game.cpp"
+  "./Utility.cpp"
 )

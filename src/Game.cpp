@@ -41,12 +41,11 @@ void Game::Run() {
     _showString += "_";
   }
 
-  int length = _hangWord.size();
-
-  std::cout << _hangWord << "\n";
   // State the Number of letters in the word
-  std::cout << "This word has " << FG_YELLOW << UNDERLINE << length << RESET
-            << " letters.\n";
+  std::cout << "This word has " << FG_YELLOW << UNDERLINE << _hangWord.length()
+            << RESET << " letters.\n";
+
+  _charsLeft = _hangWord.length();
 
   while (!_solved && _maxTries > 0) {
 
@@ -55,7 +54,7 @@ void Game::Run() {
               << " tries left.\n";
 
     // Stae the numbers of letters left to guess
-    std::cout << FG_YELLOW << UNDERLINE << length << RESET
+    std::cout << FG_YELLOW << UNDERLINE << _charsLeft << RESET
               << " letters left to guess.\n\n";
 
     // Show the letters already tried
@@ -77,7 +76,8 @@ void Game::Run() {
     std::cout << "]\n\n";
 
     // Print the Show string
-    std::cout << _showString << "\n\n";
+    std::cout << FG_BRIGHT_MAGENTA << _showString << "\n\n";
+    std::cout << RESET;
 
     // Ask user for guess
     std::cout << "Take your guess: ";
@@ -86,10 +86,10 @@ void Game::Run() {
     std::cin >> _guess;
     std::cout << "\n";
 
+    std::cout << "------------------------------------------------\n\n";
+
     // Validate the guess
     _solved = CheckWord();
-
-    std::cout << "------------------------------------------------\n\n";
   }
 
   if (_solved) {
@@ -98,7 +98,7 @@ void Game::Run() {
     std::cout << FG_BLUE << "Well Done!\n\n";
     std::cout << RESET;
   } else {
-    std::cout << "Ooh! Togh Luck! The word  was" << FG_GREEN << _hangWord
+    std::cout << "Ooh! Togh Luck! The word  was " << FG_GREEN << _hangWord
               << "\n";
     std::cout << RESET;
     std::cout << FG_MAGENTA << "Better Luck Next Time\n\n";
@@ -129,9 +129,9 @@ bool Game::CheckWord() {
   if ((_guess.size() > 1 && _guess.size() < _hangWord.size()) ||
       _guess.size() > _hangWord.size()) {
     std::cout << FG_RED << "Your guess must be " << FG_YELLOW << UNDERLINE
-              << "one letter" << FG_RED << "or a word " << FG_YELLOW
-              << UNDERLINE << "equal to" << FG_RED
-              << "the length of the word.\n\n";
+              << "one letter" << RESET << FG_RED << " or a word " << FG_YELLOW
+              << UNDERLINE << "equal to" << RESET << FG_RED
+              << " the length of the word.\n\n";
     std::cout << RESET;
     return false;
   }
@@ -180,7 +180,7 @@ bool Game::CheckWord() {
           _showString[pos] = _guess[0];
         }
 
-        // Subtract the found number of letter from the number of left
+        // Subtract the found number of letters from the number of left
         // characters
         _charsLeft -= positions.size();
       } else {
@@ -196,7 +196,7 @@ bool Game::CheckWord() {
         return true;
       } else {
         std::cout << FG_BLUE << "Well done! You guessed the letter \""
-                  << FG_GREEN << _guess << RESET << "\"\n\n";
+                  << FG_GREEN << _guess << FG_BLUE << "\"" << RESET << "\n\n";
         return false;
       }
     }

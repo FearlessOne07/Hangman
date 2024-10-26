@@ -11,8 +11,9 @@ bool LoadWords(
 
   file.open("words.txt");
   if (!file) {
-    std::cout << "Failed to find \"words.txt\". Make sure it is in the same "
-                 "directory as the \"Hangman\" executable.\n";
+    std::cout
+        << "Failed to find \"words.txt\". Make sure it is in the same working "
+           "directory as the \"Hangman\" executable.\n";
     return false;
   }
 

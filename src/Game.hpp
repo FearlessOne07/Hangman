@@ -12,6 +12,8 @@ private:
   std::string _hangWord;
   std::string _showString;
   std::string _guess;
+  std::string _status;
+  Difficulty _difficulty;
   int _charsLeft;
   int _maxTries = 0;
   bool _solved = false;
@@ -19,6 +21,7 @@ private:
   // Helper Methods
   void ChooseWord();
   bool CheckWord();
+  void RenderScreen();
 
 public:
   Game(const std::vector<std::string> &words, Difficulty difficulty);

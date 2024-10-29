@@ -1,3 +1,4 @@
+#include "Colors.hpp"
 #include "Difficulty.hpp"
 #include "Game.hpp"
 #include "Utility.hpp"
@@ -6,30 +7,43 @@
 
 int main(void) {
   // Initialize variables
+  std::cout << RESET_CURSOR_AND_CLEAR;
   std::unordered_map<Difficulty, std::vector<std::string>> words;
   Difficulty difficulty;
-  bool wantsPlay = true;
+  bool wantsToPlay = true;
+  bool validInput = false;
 
   // Load Words
   if (!LoadWords(words)) {
     return -1;
   }
 
-  //
-  while (wantsPlay) {
+  while (wantsToPlay) {
     difficulty = ChooseDifficulty();
     Game game = Game(words[difficulty], difficulty);
     game.Run();
 
-    // Query Player to playe again
-    std::string play;
-    std::cout << "Press 'P' to play again or 'E' to quit.\n";
-    std::cin >> play;
+    // Query Player to play again
+    while (!validInput) {
 
-    if (std::tolower(play[0]) == 'p') {
-      continue;
-    } else {
-      wantsPlay = false;
+      std::string input;
+      std::cout << "Play Again? (P to play again, E to exit): ";
+      std::cin >> input;
+      if (input.empty()) {
+        continue;
+      }
+
+      char choice = std::tolower(input[0]);
+      if (choice == 'p') {
+        validInput = true;
+        wantsToPlay = true;
+      } else if (choice == 'e') {
+        validInput = true;
+        wantsToPlay = false;
+      } else {
+        std::cout
+            << "Invalid choice. Please enter 'P' to play or 'E' to exit.\n";
+      }
     }
   }
 

@@ -1,4 +1,5 @@
 #include "Utility.hpp"
+#include "Colors.hpp"
 #include <fstream>
 #include <iostream>
 
@@ -21,25 +22,22 @@ bool LoadWords(
   while (std::getline(file, word)) {
     if (word.find("Easy") != std::string::npos) {
       difficulty = Difficulty::EASY;
-      std::cout << "Reading \"Easy\" words...\n";
       continue;
     } else if (word.find("Medium") != std::string::npos) {
       difficulty = Difficulty::MEDIUM;
-      std::cout << "Reading \"Medium\" words...\n";
       continue;
     } else if (word.find("Hard") != std::string::npos) {
       difficulty = Difficulty::HARD;
-      std::cout << "Reading \"Hard\" words...\n";
       continue;
     } else if (word.find("Dictionary") != std::string::npos) {
       difficulty = Difficulty::DICTIONARY;
-      std::cout << "Reading \"Dictionary\" words...\n";
       continue;
     }
     words[difficulty].push_back(word);
   }
-
-  std::cout << "Done reading file.\n\n";
+  std::cout << FG_MAGENTA;
+  std::cout << "Done reading words file\n\n";
+  std::cout << RESET;
   return true;
 }
 
@@ -48,21 +46,39 @@ Difficulty ChooseDifficulty() {
   Difficulty difficulty;
   bool chosen = false;
 
-  std::cout << "1 - Easy\n2 - Medium\n3 - Hard\n4 - Dictionary\n";
+  std::cout << FG_GREEN << "1. Easy\n" << RESET;
+  std::cout << FG_YELLOW << "2. Medium\n" << RESET;
+  std::cout << FG_BLUE << "3. Hard\n" << RESET;
+  std::cout << FG_RED << "4. Dictionary\n" << RESET;
+
   while (!chosen) {
+    std::cout << FG_MAGENTA;
     std::cout << "Choose a difficulty: ";
     std::cin >> choice;
+    std::cout << RESET;
+    if (!choice || !(choice > 0 || choice < 5)) {
+      continue;
+    }
 
     chosen = true;
     difficulty = static_cast<Difficulty>(choice);
     if (difficulty == Difficulty::EASY) {
+      std::cout << FG_GREEN;
       std::cout << "Your chosen Diffuculty is Easy\n";
+      std::cout << RESET;
     } else if (difficulty == Difficulty::MEDIUM) {
+
+      std::cout << FG_YELLOW;
       std::cout << "Your chosen Diffuculty is Medium\n";
+      std::cout << RESET;
     } else if (difficulty == Difficulty::HARD) {
+      std::cout << FG_BLUE;
       std::cout << "Your chosen Diffuculty is Hard\n";
+      std::cout << RESET;
     } else if (difficulty == Difficulty::DICTIONARY) {
+      std::cout << FG_RED;
       std::cout << "Your chosen Diffuculty is Dictionary\n";
+      std::cout << RESET;
     } else {
       std::cout << "Invalid choice. Try again\n";
       std::cin.clear();

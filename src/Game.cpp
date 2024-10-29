@@ -7,7 +7,7 @@
 #include <random>
 
 Game::Game(const std::vector<std::string> &words, Difficulty difficulty)
-    : _words(words), _guessedLetters() {
+    : _words(words), _guessedLetters(), _difficulty(difficulty) {
   switch (difficulty) {
   case Difficulty::EASY:
     _maxTries = 6;
@@ -41,52 +41,17 @@ void Game::Run() {
     _showString += "_";
   }
 
-  // State the Number of letters in the word
-  std::cout << "This word has " << FG_YELLOW << UNDERLINE << _hangWord.length()
-            << RESET << " letters.\n";
-
   _charsLeft = _hangWord.length();
 
   while (!_solved && _maxTries > 0) {
 
-    // State number of tries left
-    std::cout << "You have " << FG_YELLOW << UNDERLINE << _maxTries << RESET
-              << " tries left.\n";
-
-    // Stae the numbers of letters left to guess
-    std::cout << FG_YELLOW << UNDERLINE << _charsLeft << RESET
-              << " letters left to guess.\n\n";
-
-    // Show the letters already tried
-    std::cout << "Letters tried: [";
-    for (std::string &letter : _guessedLetters) {
-      if (_guessedLetters[0] != letter) {
-        std::cout << ", ";
-      }
-
-      if (_hangWord.find(letter) != std::string::npos) {
-        std::cout << FG_GREEN;
-      } else {
-        std::cout << FG_RED;
-      }
-
-      std::cout << letter;
-      std::cout << RESET;
-    }
-    std::cout << "]\n\n";
-
-    // Print the Show string
-    std::cout << FG_BRIGHT_MAGENTA << _showString << "\n\n";
-    std::cout << RESET;
-
+    RenderScreen();
     // Ask user for guess
     std::cout << "Take your guess: ";
 
     // Get the user's guess
     std::cin >> _guess;
     std::cout << "\n";
-
-    std::cout << "------------------------------------------------\n\n";
 
     // Validate the guess
     _solved = CheckWord();
@@ -116,23 +81,30 @@ void Game::ChooseWord() {
 
 bool Game::CheckWord() {
   std::vector<std::size_t> positions;
+  _status = "";
 
   // Check if the guess is alphabetic
   if (!std::all_of(_guess.begin(), _guess.end(),
                    [](char c) { return std::isalpha(c); })) {
-    std::cout << "You can only guess a " << FG_RED << UNDERLINE << "letter"
-              << RESET << "\n\n";
+    _status =
+        "You can only guess a " + FG_RED + UNDERLINE + "letter" + RESET + "";
+
+    //////////////////
+    std::cout << BOLD << FG_BRIGHT_MAGENTA << UNDERLINE
+              << "Jessica Tidmarsh, My beautiful baby girl!!!!\n\n"
+              << RESET;
+    //////////////////
+
     return false;
   }
 
   // Check if the guess is not one letter or is longer than the hangword
   if ((_guess.size() > 1 && _guess.size() < _hangWord.size()) ||
       _guess.size() > _hangWord.size()) {
-    std::cout << FG_RED << "Your guess must be " << FG_YELLOW << UNDERLINE
-              << "one letter" << RESET << FG_RED << " or a word " << FG_YELLOW
-              << UNDERLINE << "equal to" << RESET << FG_RED
-              << " the length of the word.\n\n";
-    std::cout << RESET;
+    _status = FG_RED + "Your guess must be " + FG_YELLOW + UNDERLINE +
+              "one letter" + RESET + FG_RED + " or a word " + FG_YELLOW +
+              UNDERLINE + "equal to" + RESET + FG_RED +
+              " the length of the word." + RESET;
     return false;
   }
 
@@ -142,8 +114,9 @@ bool Game::CheckWord() {
     // If the guess is not the hang word
     if (_guess != _hangWord) {
       std::cout << FG_RED;
-      std::cout << " Ooooh, that word wasn't quite right. Try "
-                   "again.\033[0m \n\n";
+      _status = " Ooooh, that word wasn't quite right. Try "
+                "again." +
+                RESET;
       _maxTries--;
       return false;
     } else {
@@ -157,8 +130,7 @@ bool Game::CheckWord() {
     // Check of the letter has already been guessed
     if (std::find(_guessedLetters.begin(), _guessedLetters.end(), _guess) !=
         _guessedLetters.end()) {
-      std::cout << FG_MAGENTA << "Letter has already been guessed.\n\n";
-      std::cout << RESET;
+      _status = FG_MAGENTA + "Letter has already been guessed." + RESET;
       return false;
     } else if (_showString.find(_guess[0]) == std::string::npos) {
       std::size_t position = _hangWord.find(_guess);
@@ -185,8 +157,7 @@ bool Game::CheckWord() {
         _charsLeft -= positions.size();
       } else {
         std::cout << FG_RED;
-        std::cout
-            << "Ooooh, that letter wasn't quite right. Try again.\033[0m\n\n";
+        _status = "Ooooh, that letter wasn't quite right. Try again." + RESET;
         _maxTries--;
         return false;
       }
@@ -195,11 +166,63 @@ bool Game::CheckWord() {
       if (_showString.find("_") == std::string::npos) {
         return true;
       } else {
-        std::cout << FG_BLUE << "Well done! You guessed the letter \""
-                  << FG_GREEN << _guess << FG_BLUE << "\"" << RESET << "\n\n";
+        _status = FG_BLUE + "Well done! You guessed the letter \"" + FG_GREEN +
+                  _guess + FG_BLUE + "\"" + RESET;
         return false;
       }
     }
   }
   return false;
+}
+
+void Game::RenderScreen() {
+  std::cout << RESET_CURSOR_AND_CLEAR;
+  std::cout
+      << FG_MAGENTA +
+             "-----------------------------------------------------------\n" +
+             RESET;
+  std::cout << FG_MAGENTA + "Difficulty: "
+            << (_difficulty == Difficulty::EASY     ? FG_GREEN + "Easy"
+                : _difficulty == Difficulty::MEDIUM ? FG_YELLOW + "Medium"
+                : _difficulty == Difficulty::HARD   ? FG_BLUE + "Hard"
+                                                    : FG_RED + "Dictionary")
+            << "\n"
+            << RESET;
+
+  // State the Number of letters in the word
+  std::cout << "This word has " << FG_YELLOW << UNDERLINE << _hangWord.length()
+            << RESET << " letters.\n";
+
+  // State number of tries left
+  std::cout << "You have " << FG_YELLOW << UNDERLINE << _maxTries << RESET
+            << " tries left.\n";
+
+  // Stae the numbers of letters left to guess
+  std::cout << FG_YELLOW << UNDERLINE << _charsLeft << RESET
+            << " letters left to guess.\n\n";
+
+  // Show the letters already tried
+  std::cout << "Letters tried: [";
+  for (std::string &letter : _guessedLetters) {
+    if (_guessedLetters[0] != letter) {
+      std::cout << ", ";
+    }
+
+    if (_hangWord.find(letter) != std::string::npos) {
+      std::cout << FG_GREEN;
+    } else {
+      std::cout << FG_RED;
+    }
+
+    std::cout << letter;
+    std::cout << RESET;
+  }
+  std::cout << "]\n\n";
+
+  // Print status for player
+  std::cout << _status << "\n\n";
+
+  // Print the Show string
+  std::cout << FG_BRIGHT_MAGENTA << _showString << "\n\n";
+  std::cout << RESET;
 }

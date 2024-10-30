@@ -6,3 +6,4 @@
 
 Difficulty ChooseDifficulty();
 bool LoadWords(std::unordered_map<Difficulty, std::vector<std::string>> &words);
+void SplashScreen();

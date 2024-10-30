@@ -2,7 +2,9 @@
 #include "Difficulty.hpp"
 #include "Game.hpp"
 #include "Utility.hpp"
+#include <chrono>
 #include <iostream>
+#include <thread>
 #include <unordered_map>
 
 int main(void) {
@@ -17,8 +19,11 @@ int main(void) {
   if (!LoadWords(words)) {
     return -1;
   }
+  std::this_thread::sleep_for(std::chrono::seconds(2));
 
   while (wantsToPlay) {
+
+    SplashScreen();
     difficulty = ChooseDifficulty();
     Game game = Game(words[difficulty], difficulty);
     game.Run();

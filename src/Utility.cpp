@@ -1,10 +1,18 @@
 #include "Utility.hpp"
 #include "Colors.hpp"
+#include <chrono>
+#include <exception>
 #include <fstream>
+#include <functional>
+#include <future>
 #include <iostream>
+#include <thread>
 
-bool LoadWords(
-    std::unordered_map<Difficulty, std::vector<std::string>> &words) {
+// Helper
+
+void ReadWordsFile(
+    std::unordered_map<Difficulty, std::vector<std::string>> &words,
+    std::promise<bool> &promise) {
 
   Difficulty difficulty;
   std::fstream file;
@@ -12,12 +20,13 @@ bool LoadWords(
 
   file.open("words.txt");
   if (!file) {
+    std::cout << FG_RED;
     std::cout
         << "Failed to find \"words.txt\". Make sure it is in the same working "
            "directory as the \"Hangman\" executable.\n";
-    return false;
+    std::cout << RESET;
+    promise.set_value(false);
   }
-
   // Read File
   while (std::getline(file, word)) {
     if (word.find("Easy") != std::string::npos) {
@@ -36,9 +45,47 @@ bool LoadWords(
     words[difficulty].push_back(word);
   }
   std::cout << FG_MAGENTA;
-  std::cout << "Done reading words file\n\n";
   std::cout << RESET;
-  return true;
+  promise.set_value(true);
+}
+
+void PrintStatus() {
+  for (int i = 0; i < 3; i++) {
+    std::cout << FG_MAGENTA << BOLD;
+    std::cout << "Reading Words file";
+
+    // Print the dots according to the current iteration
+    for (int j = 0; j <= i; j++) {
+      std::cout << ".";
+    }
+
+    std::cout << "\r"; // Move the cursor back to the start of the line
+    std::cout.flush(); // Ensure the output is immediately displayed
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+  }
+  std::cout << "Reading Words file... Done!" << std::endl; // Final message
+  std::cout << RESET;
+}
+
+bool LoadWords(
+    std::unordered_map<Difficulty, std::vector<std::string>> &words) {
+
+  std::promise<bool> promise;
+  std::future<bool> result = promise.get_future();
+
+  std::thread readFileThread(ReadWordsFile, std::ref(words), std::ref(promise));
+  std::thread printStatusThread(PrintStatus);
+
+  bool success;
+  try {
+    readFileThread.join();
+    success = result.get();
+  } catch (std::exception &e) {
+    std::cerr << e.what() << "\n";
+    return false;
+  }
+  printStatusThread.join();
+  return success;
 }
 
 Difficulty ChooseDifficulty() {
@@ -88,4 +135,12 @@ Difficulty ChooseDifficulty() {
   }
   std::cout << "\n----------------------------------------------\n\n";
   return difficulty;
+}
+
+void SplashScreen() {
+  std::cout << RESET_CURSOR_AND_CLEAR;
+  std::cout << FG_MAGENTA;
+  std::cout << "╔════════════════════════════════════════╗\n";
+  std::cout << "║            WELCOME TO HANGMAN          ║\n";
+  std::cout << "╚════════════════════════════════════════╝\n" << RESET;
 }

@@ -16,6 +16,7 @@ private:
   Difficulty _difficulty;
   int _charsLeft;
   int _maxTries = 0;
+  int _triesLeft = 0;
   bool _solved = false;
 
   // Helper Methods

@@ -1,5 +1,6 @@
 #include "Utility.hpp"
 #include "Colors.hpp"
+#include <cctype>
 #include <chrono>
 #include <exception>
 #include <fstream>
@@ -26,6 +27,7 @@ void ReadWordsFile(
            "directory as the \"Hangman\" executable.\n";
     std::cout << RESET;
     promise.set_value(false);
+    return;
   }
   // Read File
   while (std::getline(file, word)) {
@@ -63,7 +65,7 @@ void PrintStatus() {
     std::cout.flush(); // Ensure the output is immediately displayed
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
   }
-  std::cout << "Reading Words file... Done!" << std::endl; // Final message
+  std::cout << "Reading Words file... Done!\n"; // Final message
   std::cout << RESET;
 }
 
@@ -101,9 +103,13 @@ Difficulty ChooseDifficulty() {
   while (!chosen) {
     std::cout << FG_MAGENTA;
     std::cout << "Choose a difficulty: ";
-    std::cin >> choice;
-    std::cout << RESET;
-    if (!choice || !(choice > 0 || choice < 5)) {
+
+    if (!(std::cin >> choice) || choice < 1 || choice > 4) {
+      std::cout << FG_RED;
+      std::cout << "Invalid choice. Try again\n";
+      std::cout << RESET;
+      std::cin.clear();
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
       continue;
     }
 
@@ -126,14 +132,11 @@ Difficulty ChooseDifficulty() {
       std::cout << FG_RED;
       std::cout << "Your chosen Diffuculty is Dictionary\n";
       std::cout << RESET;
-    } else {
-      std::cout << "Invalid choice. Try again\n";
-      std::cin.clear();
-      std::cin.ignore();
-      chosen = false;
     }
+    std::this_thread::sleep_for(std::chrono::seconds(2));
   }
   std::cout << "\n----------------------------------------------\n\n";
+
   return difficulty;
 }
 

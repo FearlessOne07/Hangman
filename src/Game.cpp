@@ -90,12 +90,6 @@ bool Game::CheckWord() {
     _status =
         "You can only guess a " + FG_RED + UNDERLINE + "letter" + RESET + "";
 
-    //////////////////
-    std::cout << BOLD << FG_BRIGHT_MAGENTA << UNDERLINE
-              << "Jessica Tidmarsh, My beautiful baby girl!!!!\n\n"
-              << RESET;
-    //////////////////
-
     return false;
   }
 
@@ -157,17 +151,18 @@ bool Game::CheckWord() {
         // characters
         _charsLeft -= positions.size();
       } else {
-        std::cout << FG_RED;
-        _status = "Ooooh, that letter wasn't quite right. Try again." + RESET;
+        _status = FG_RED + "Ooooh, that letter wasn't quite right. Try again." +
+                  RESET;
         _triesLeft--;
         return false;
       }
 
       // Check if show string is completley filled
       if (_showString.find("_") == std::string::npos) {
+        _showString = _guess;
         return true;
       } else {
-        _status = FG_BLUE + "Well done! You guessed the letter" + FG_GREEN +
+        _status = FG_BLUE + "Well done! You guessed the letter " + FG_GREEN +
                   _guess + FG_BLUE + RESET;
         return false;
       }
@@ -178,10 +173,6 @@ bool Game::CheckWord() {
 
 void Game::RenderScreen() {
   std::cout << RESET_CURSOR_AND_CLEAR;
-  std::cout
-      << FG_MAGENTA +
-             "══════════════════════════════════════════════════════════\n" +
-             RESET;
   std::cout << FG_MAGENTA + "Difficulty: "
             << (_difficulty == Difficulty::EASY     ? FG_GREEN + "Easy"
                 : _difficulty == Difficulty::MEDIUM ? FG_YELLOW + "Medium"
